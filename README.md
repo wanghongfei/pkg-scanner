@@ -1,4 +1,4 @@
-## Package Scanner - 包扫描器
+## Package Scanner - The missing scanner in Java world
 扫描出指定包下所有的类名。
 
 ### Quick Start
