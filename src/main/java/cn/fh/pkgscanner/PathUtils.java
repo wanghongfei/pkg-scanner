@@ -1,6 +1,5 @@
 package cn.fh.pkgscanner;
 
-import com.sun.tools.javac.util.Assert;
 
 import java.io.File;
 

@@ -2,6 +2,7 @@ package cn.fh.pkgscanner;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -13,16 +14,35 @@ import java.util.jar.JarFile;
  * Created by whf on 8/28/15.
  */
 public class PkgScanner {
+    /**
+     * 包名
+     */
     private String pkgName;
+
+    /**
+     * 包对应的路径名
+     */
     private String pkgPath;
 
+    /**
+     * 注解的class对象
+     */
+    private Class anClazz;
+
     private ClassLoader cl;
+
 
     public PkgScanner(String pkgName) {
         this.pkgName = pkgName;
         this.pkgPath = PathUtils.packageToPath(pkgName);
 
         cl = Thread.currentThread().getContextClassLoader();
+    }
+
+    public PkgScanner(String pkgName, Class anClazz) {
+        this(pkgName);
+
+        this.anClazz = anClazz;
     }
 
     /**
@@ -32,12 +52,21 @@ public class PkgScanner {
      * @throws IOException
      */
     public List<String> scan() throws IOException {
-        return loadResource();
+        List<String> list = loadResource();
+        if (null != this.anClazz) {
+            list = filterComponents(list);
+        }
+
+        return list;
     }
 
     public void setPkgName(String pkgName) {
         this.pkgName = pkgName;
         this.pkgPath = PathUtils.packageToPath(pkgName);
+    }
+
+    public void setAnnocation(Class an) {
+        this.anClazz = an;
     }
 
     private List<String> loadResource() throws IOException {
@@ -150,15 +179,27 @@ public class PkgScanner {
         return classNameList;
     }
 
-    public static void main(String[] args) throws IOException {
-        PkgScanner scanner = new PkgScanner("cn.fh.security");
-        List<String> list = scanner.scan();
+    /**
+     * 过虑掉没有指定注解的类
+     * @param classList
+     * @return
+     */
+    private List<String> filterComponents(List<String> classList) {
+        List<String> newList = new ArrayList<>(20);
 
-        list.forEach( f -> System.out.println(f));
+        classList.forEach(name -> {
+            try {
+                Class clazz = Class.forName(name);
+                Annotation an = clazz.getAnnotation(this.anClazz);
+                if (null != an) {
+                    newList.add(name);
+                }
 
-        scanner.setPkgName("cn.fh.pkgscanner");
-        list = scanner.scan();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
 
-        list.forEach(f -> System.out.println(f));
+        return newList;
     }
 }
