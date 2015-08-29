@@ -126,7 +126,7 @@ public class PkgScanner {
             JarEntry entry = entries.nextElement();
             String name = entry.getName();
 
-            if(name.endsWith(ResourceType.CLASS_FILE.getTypeString())) {
+            if( (name.startsWith(pkgPath)) && (name.endsWith(ResourceType.CLASS_FILE.getTypeString())) ) {
                 name = PathUtils.trimSuffix(name);
                 name = PathUtils.pathToPackage(name);
 
